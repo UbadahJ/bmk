@@ -2,8 +2,6 @@
 
 mod common;
 
-use std::process::Command;
-
 use common::Env;
 
 const LIST: &str = "\
@@ -65,15 +63,19 @@ fn tags_counts_sorted_case_folded() {
         .prints("android\t1\ndocker\t2\ninfra\t1\nkotlin\t1\n");
 }
 
-#[cfg(target_os = "macos")]
 #[test]
 fn ls_on_a_terminal_is_aligned_and_keeps_tilde() {
+    use std::process::Command;
     let env = Env::with(LIST);
-    let out = Command::new("script")
-        .args(["-q", "/dev/null", env!("CARGO_BIN_EXE_bmk"), "-c", "ls"])
-        .env("HOME", &env.home)
-        .output()
-        .unwrap();
+    // Run under a pseudo-terminal. BSD/macOS and util-linux `script` differ in syntax.
+    let mut script = Command::new("script");
+    if cfg!(target_os = "macos") {
+        script.args(["-q", "/dev/null", env!("CARGO_BIN_EXE_bmk"), "-c", "ls"]);
+    } else {
+        let cmd = format!("'{}' -c ls", env!("CARGO_BIN_EXE_bmk"));
+        script.args(["-qec", &cmd, "/dev/null"]);
+    }
+    let out = script.env("HOME", &env.home).output().unwrap();
     let text = String::from_utf8(out.stdout).unwrap().replace('\r', "");
     let want = "\
 personal/app     ~/Dev/app  kotlin,Android
