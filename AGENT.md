@@ -28,6 +28,16 @@ To benchmark, run `scripts/bench.sh` (needs `hyperfine` and `python3`) and updat
 `bmk -V` − empty Rust), not only the gap to `/usr/bin/true`: on macOS, process start takes
 almost all of the time, and bmk's own work is about 0.1 ms.
 
+## Releases
+
+Bump `version` in `Cargo.toml`, commit, then push a matching tag (`git tag v0.2.0 && git push
+origin v0.2.0`). `.github/workflows/release.yml` runs the tests on macOS and Linux and a build
+on Rust 1.70, then builds generic binaries (empty `RUSTFLAGS` overrides `target-cpu=native`)
+for `aarch64`/`x86_64` macOS and static `aarch64`/`x86_64` musl Linux. It publishes them as
+a GitHub release with `SHA256SUMS`. The tag must match `Cargo.toml`, or the release job fails.
+Running the workflow by hand is a dry run: it builds the archives but publishes nothing.
+There's no CI on ordinary pushes, so run the checks above locally.
+
 ## Hard constraints (settled decisions; don't reopen them)
 
 - **Std only.** No crates in `[dependencies]` or `[dev-dependencies]`. `rust-version = "1.70"`:
@@ -106,7 +116,8 @@ almost all of the time, and bmk's own work is about 0.1 ms.
 | `build.rs` | Sets `BMK_BUILD` to `native` or `generic` for `bmk -V` |
 | `tests/common/mod.rs` | `Env` (temporary `HOME` per test) and `Out` assertions |
 | `tests/{lookup,manage,list,edit_doctor,complete}.rs` | End-to-end tests by area |
-| `install.sh` | Native install, fish completion stub, config init, `--uninstall` |
+| `install.sh` | Native build from source, or a prebuilt binary from a release archive; fish completion stub, config init, `--uninstall` |
+| `.github/workflows/release.yml` | Release on a `v*` tag: tests (macOS, Linux), MSRV build, generic builds, GitHub release |
 | `scripts/bench.sh` | Benchmark suite behind `docs/benchmark.md` |
 
 The library is private apart from `bmk::main`; it exists so the binary stays thin and the

@@ -26,21 +26,43 @@ with names you'll remember, without moving anything on disk.
 
 ## Install
 
-You need Rust 1.70+ and fish 3.4+.
+You need fish 3.4+. There are two ways to install, and both use the same `install.sh`.
+
+### Prebuilt binary
+
+Each [release](https://github.com/UbadahJ/bmk/releases) has generic builds for macOS
+(`aarch64-apple-darwin`, `x86_64-apple-darwin`) and static Linux builds
+(`x86_64-unknown-linux-musl`, `aarch64-unknown-linux-musl`), plus `SHA256SUMS`.
 
 ```sh
-git clone git@github.com:UbadahJ/bmk.git && cd bmk
+v=0.1.0 t=x86_64-unknown-linux-musl     # pick your release and target
+curl -fLO https://github.com/UbadahJ/bmk/releases/download/v$v/bmk-$v-$t.tar.gz
+tar -xzf bmk-$v-$t.tar.gz && ./bmk-$v-$t/install.sh
+```
+
+This installs `bmk` to `~/.local/bin` (or `$BMK_BIN_DIR`). On macOS the binaries aren't
+notarized: download them with `curl` as above, or see [`docs/macos.md`](docs/macos.md) for
+how to allow a browser download.
+
+### From source
+
+You need Rust 1.70+.
+
+```sh
+git clone https://github.com/UbadahJ/bmk.git && cd bmk
 ./install.sh             # native build, fish completions, empty bookmarks file
 ./install.sh --uninstall # removes bmk and its completions; keeps your bookmarks
 ```
 
-`install.sh` runs `cargo install` with `-C target-cpu=native`. It writes
-`~/.config/fish/completions/bmk.fish`, a one-line stub (`command -q bmk; and command bmk --cli fish | source`) so the
-completions always match the installed binary, and creates `~/.config/bmk/bookmarks` if it's
-missing. `bmk -V` prints `(native)` or `(generic)`.
+`install.sh` runs `cargo install` with `-C target-cpu=native`. A native build may not run on
+another CPU, so build on each machine rather than copying the binary. bmk's own work is
+about 0.1 ms of each call, so a generic build is practically as fast; see
+[Performance](#performance).
 
-Build on each machine. A native build may not run on another CPU, so don't copy the binary
-between machines.
+Either way, the installer writes `~/.config/fish/completions/bmk.fish`, a one-line stub
+(`command -q bmk; and command bmk --cli fish | source`) so the completions always match the
+installed binary, and creates `~/.config/bmk/bookmarks` if it's missing. `bmk -V` prints
+`(native)` or `(generic)`.
 
 ## Quick start
 
@@ -260,6 +282,8 @@ on `PATH`.
 | `tests/` | End-to-end tests by area, sharing `tests/common/mod.rs` |
 | `docs/design.md` | Design document; `docs/design-review.md` is its review |
 | `docs/benchmark.md`, `scripts/bench.sh` | Benchmark results and the script that reproduces them |
+| `docs/macos.md` | Allowing an unnotarized release binary on macOS |
+| `.github/workflows/release.yml` | Tagged releases: tests, generic builds for four targets, GitHub release |
 
 See `AGENT.md` for working on the code.
 
