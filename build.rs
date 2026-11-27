@@ -6,7 +6,7 @@ fn main() {
     let native = flags
         .split('\x1f')
         .filter_map(|f| f.split_once("target-cpu=").map(|(_, cpu)| cpu))
-        .last()
+        .next_back()
         == Some("native");
     println!(
         "cargo:rustc-env=BMK_BUILD={}",
