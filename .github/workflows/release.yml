@@ -91,6 +91,8 @@ jobs:
           name: ${{ matrix.target }}
           path: ${{ env.ARCHIVE }}
           if-no-files-found: error
+          # The release keeps its own copies; these are only for handing over to that job.
+          retention-days: 1
 
   release:
     if: github.ref_type == 'tag'
