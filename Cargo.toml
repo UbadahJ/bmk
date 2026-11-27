@@ -1,0 +1,29 @@
+[package]
+name = "bmk"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.70"
+description = "Scoped directory bookmarks: resolve `bmk <namespace> <name>` to a path"
+publish = false
+license = "MIT"
+repository = "https://github.com/UbadahJ/bmk"
+readme = "README.md"
+keywords = ["cli", "bookmarks", "fish", "directories"]
+categories = ["command-line-utilities"]
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "bmk"
+path = "src/main.rs"
+doc = false   # the library carries the docs; avoids a lib/bin doc name collision
+test = false  # behavior is covered by tests/ against the built binary
+
+[dependencies]
+
+[profile.release]
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = true
